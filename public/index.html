@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Identity System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.0/web3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 0 4px;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .section {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .status {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .wallet-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard {
+            text-align: center;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+
+        .biometric-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .biometric-btn:hover {
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .fingerprint-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        #sendTxBtn{
+            background-color: #4CAF50;
+            padding: 10px;
+            margin-bottom: 2cm;
+            border-radius: 3cm;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Decentralized Identity System</h1>
+            <p>Secure blockchain-based identity with biometric authentication</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('register')">Register</button>
+            <button class="nav-tab" onclick="showSection('login')">Login</button>
+            <button class="nav-tab" onclick="showSection('dashboard')" id="dashboardTab" style="display: none;">Dashboard</button>
+        </div>
+
+        <div id="status" class="status"></div>
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">Loading...</p>
+        </div>
+
+        <!-- Registration Section -->
+        <div id="register" class="section active">
+            <h2>Create Your Digital Identity</h2>
+            <p style="margin-bottom: 20px; color: #666;">Register your identity on the blockchain with biometric security.</p>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="regName">Full Name</label>
+                    <input type="text" id="regName" required placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regEmail">Email Address</label>
+                    <input type="email" id="regEmail" required placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regAadhaar">Aadhaar Number</label>
+                    <input type="text" id="regAadhaar" required placeholder="Enter 12-digit Aadhaar number" maxlength="12">
+                </div>
+                
+                <div class="wallet-info">
+                    <h4>Wallet Connection</h4>
+                    <p style="margin-bottom: 10px;">Connect your Web3 wallet to register on blockchain:</p>
+                    <button type="button" id="connectWallet" class="btn btn-secondary">Connect Wallet</button>
+                    <input type="text" id="userAddress" placeholder="Wallet address will appear here" readonly style="margin-top: 10px;">
+                </div>
+                
+                <button type="submit" class="btn">
+                    🚀 Register Identity
+                </button>
+            </form>
+        </div>
+
+        <!-- Login Section -->
+        <div id="login" class="section">
+            <h2>Access Your Identity</h2>
+            <p style="margin-bottom: 20px; color: #666;">Login using your biometric authentication.</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" required placeholder="Enter your email">
+                </div>
+                
+                <button type="submit" class="btn biometric-btn">
+                    <svg class="fingerprint-icon" viewBox="0 0 24 24">
+                        <path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21z"/>
+                    </svg>
+                    Login with Biometric
+                </button>
+            </form>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section">
+            <div class="dashboard">
+                <div class="user-card">
+                    <h2>Welcome back!</h2>
+                    <div id="userInfo">
+                        <p id="userName"></p>
+                        <p id="userEmail"></p>
+                        <p id="userWallet"></p>
+                    </div>
+                </div>
+                <div>
+                    <label for="toAddress">Recipient Ethereum Address:</label><br />
+                    <input type="text" id="toAddress" placeholder="0x..." style="width: 300px;" />
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <label for="ethAmount">Amount (ETH):</label><br />
+                    <input type="number" id="ethAmount" placeholder="0.1" step="0.0001" min="0" style="width: 150px;" />
+                </div>
+
+            <div style="margin-top: 15px;">
+            <button id="sendTxBtn">Send ETH</button>
+            </div>
+
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" onclick="showIdentityProof()">📋 View Identity Proof</button>
+                    <button class="btn btn-secondary" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Decentralized Identity System - Frontend Application
+         * Handles user registration, biometric authentication, and blockchain interaction
+         */
+
+        // Global variables
+        const apiBase = '/api/blockchain';
+        let web3 = null;
+        let userAccount = null;
+        let authToken = null;
+        let currentUser = null;
+        
+
+        // Mock API responses for demo purposes
+        const mockUsers = {};
+        const userCredentials = {};
+        const authState = {
+            token: null,
+            user: null
+        };
+
+  document.getElementById('sendTxBtn').addEventListener('click', async () => {
+    if (!window.ethereum) {
+      alert('MetaMask not found');
+      return;
+    }
+
+    const toAddress = document.getElementById('toAddress').value.trim();
+    const ethAmount = document.getElementById('ethAmount').value.trim();
+
+    if (!toAddress || !/^0x[a-fA-F0-9]{40}$/.test(toAddress)) {
+      alert('Please enter a valid Ethereum address starting with 0x');
+      return;
+    }
+
+    if (!ethAmount || isNaN(ethAmount) || Number(ethAmount) <= 0) {
+      alert('Please enter a valid amount of ETH greater than 0');
+      return;
+    }
+
+    try {
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const from = accounts[0];
+
+      // Convert ETH amount to Wei hex string
+      const valueInWei = '0x' + (BigInt(Math.floor(Number(ethAmount) * 1e18))).toString(16);
+
+      const txParams = {
+        from,
+        to: toAddress,
+        value: valueInWei,
+        gas: '0x5208', // 21000 gas limit
+      };
+
+      const txHash = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [txParams],
+      });
+
+      alert('Transaction sent! Tx hash: ' + txHash);
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
+  });
+// Example using ethers.js or web3.js
+
+const sendEth = async (toAddress, amountInEth) => {
+  const accounts = await web3.eth.getAccounts();
+  const sender = accounts[0];
+
+  const tx = await web3.eth.sendTransaction({
+    from: sender,
+    to: toAddress,
+    value: web3.utils.toWei(amountInEth, 'ether'),
+  });
+
+  console.log('Transaction successful', tx);
+};
+
+        // Initialize application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            checkAuthStatus();
+        });
+
+        /**
+         * Initialize the application
+         */
+        function initializeApp() {
+            console.log('🚀 Initializing Decentralized Identity System');
+            
+            // Check if Web3 is available
+            if (typeof window.ethereum !== 'undefined') {
+                web3 = new Web3(window.ethereum);
+                console.log('✅ Web3 detected');
+            } else {
+                console.warn('⚠️ Web3 not detected - wallet functionality limited');
+                showStatus('info', 'Please install MetaMask or another Web3 wallet for full functionality');
+            }
+            
+            // Check WebAuthn support
+            if (!window.PublicKeyCredential) {
+                showStatus('error', 'WebAuthn not supported in this browser. Biometric authentication unavailable.');
+                console.error('❌ WebAuthn not supported');
+            } else {
+                console.log('✅ WebAuthn supported');
+            }
+        }
+
+        /**
+         * Setup event listeners for forms and buttons
+         */
+        function setupEventListeners() {
+            // Registration form
+            const registerForm = document.getElementById('registerForm');
+            if (registerForm) {
+                registerForm.addEventListener('submit', handleRegistration);
+            }
+            
+            // Login form
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
+            
+            // Connect wallet button
+            const connectWalletBtn = document.getElementById('connectWallet');
+            if (connectWalletBtn) {
+                connectWalletBtn.addEventListener('click', connectWallet);
+            }
+        }
+
+        /**
+         * Check authentication status on page load
+         */
+        function checkAuthStatus() {
+            if (authState.token && authState.user) {
+                authToken = authState.token;
+                currentUser = authState.user;
+                showDashboard(currentUser);
+                updateNavigation(true);
+            }
+        }
+
+        /**
+         * Connect to user's Web3 wallet
+         */
+        async function connectWallet() {
+            if (!web3) {
+                showStatus('error', 'Web3 not available. Please install MetaMask.');
+                return;
+            }
+            
+            try {
+                showLoading('Connecting to wallet...');
+                
+                // Request account access
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                
+                if (accounts.length > 0) {
+                    userAccount = accounts[0];
+                    document.getElementById('userAddress').value = userAccount;
+                    showStatus('success', `Wallet connected: ${userAccount.substring(0, 10)}...`);
+                    console.log('✅ Wallet connected:', userAccount);
+                }
+                
+                hideLoading();
+            } catch (error) {
+                hideLoading();
+                console.error('Wallet connection failed:', error);
+                showStatus('error', 'Failed to connect wallet: ' + error.message);
+            }
+        }
+
+        /**
+         * Handle user registration
+         */
+        async function handleRegistration(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const aadhaar = document.getElementById('regAadhaar').value.trim();
+            const userAddress = document.getElementById('userAddress').value.trim();
+            
+            // Validation
+            if (!name || !email || !aadhaar || !userAddress) {
+                showStatus('error', 'All fields are required');
+                return;
+            }
+            
+            if (aadhaar.length !== 12 || !/^\d{12}$/.test(aadhaar)) {
+                showStatus('error', 'Aadhaar number must be exactly 12 digits');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showStatus('error', 'Please enter a valid email address');
+                return;
+            }
+
+            if (mockUsers[email]) {
+                showStatus('error', 'User already registered with this email');
+                return;
+            }
+            
+            try {
+                showLoading('Registering user on blockchain...');
+                
+                // Simulate blockchain registration
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const transactionHash = '0x' + Math.random().toString(16).substr(2, 64);
+                console.log('✅ Blockchain registration successful:', transactionHash);
+                
+                showStatus('success', 'User registered on blockchain successfully!');
+                
+                // Step 2: Setup WebAuthn biometric authentication
+                showLoading('Setting up biometric authentication...');
+                
+                await setupBiometricAuth(email, name);
+                
+                // Store user data
+                mockUsers[email] = {
+                    name,
+                    email,
+                    aadhaar,
+                    userAddress,
+                    transactionHash,
+                    registeredAt: new Date().toISOString()
+                };
+                
+                hideLoading();
+                showStatus('success', 'Registration completed! You can now login with biometric authentication.');
+                
+                // Clear form and switch to login
+                document.getElementById('registerForm').reset();
+                setTimeout(() => {
+                    showSection('login');
+                    document.getElementById('loginEmail').value = email;
+                }, 2000);
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Registration failed:', error);
+                showStatus('error', 'Registration failed: ' + error.message);
+            }
+        }
+
+        /**
+         * Setup biometric authentication using WebAuthn
+         */
+        async function setupBiometricAuth(email, name) {
+            if (!window.PublicKeyCredential) {
+                throw new Error('WebAuthn not supported in this browser');
+            }
+            
+            try {
+                const challenge = crypto.getRandomValues(new Uint8Array(32));
+                const userId = crypto.getRandomValues(new Uint8Array(64));
+                
+                const publicKeyCredentialCreationOptions = {
+                    challenge: challenge,
+                    rp: {
+                        name: "Decentralized Identity System",
+                        id: window.location.hostname,
+                    },
+                    user: {
+                        id: userId,
+                        name: email,
+                        displayName: name,
+                    },
+                    pubKeyCredParams: [{alg: -7, type: "public-key"}],
+                    authenticatorSelection: {
+                        authenticatorAttachment: "platform",
+                        userVerification: "required"
+                    },
+                    timeout: 60000,
+                    attestation: "direct"
+                };
+                
+                const credential = await navigator.credentials.create({
+                    publicKey: publicKeyCredentialCreationOptions
+                });
+                
+                if (!credential) {
+                    throw new Error('Failed to create biometric credential');
+                }
+                
+                console.log('✅ Biometric credential created successfully');
+                
+                // Store credential reference in memory
+                userCredentials[email] = {
+                    id: credential.id,
+                    type: credential.type
+                };
+                
+            } catch (error) {
+                if (error.name === 'NotAllowedError') {
+                    throw new Error('Biometric authentication was cancelled or not allowed');
+                } else if (error.name === 'NotSupportedError') {
+                    throw new Error('Biometric authentication not supported on this device');
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        /**
+         * Handle user login
+         */
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            
+            if (!email) {
+                showStatus('error', 'Email is required');
+                return;
+            }
+
+            if (!mockUsers[email]) {
+                showStatus('error', 'No account found with this email. Please register first.');
+                return;
+            }
+            
+            try {
+                showLoading('Authenticating with biometrics...');
+                
+                await authenticateBiometric(email);
+                
+                // Simulate server authentication
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                const token = 'jwt_' + Math.random().toString(36).substr(2, 16);
+                authToken = token;
+                currentUser = mockUsers[email];
+                
+                // Store auth state in memory
+                authState.token = token;
+                authState.user = currentUser;
+                
+                hideLoading();
+                showStatus('success', 'Login successful!');
+                
+                setTimeout(() => {
+                    showDashboard(currentUser);
+                    updateNavigation(true);
+                }, 1000);
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Login failed:', error);
+                showStatus('error', 'Login failed: ' + error.message);
+            }
+        }
+
+        /**
+         * Authenticate using biometric
+         */
+        async function authenticateBiometric(email) {
+    if (!window.PublicKeyCredential) {
+        throw new Error('WebAuthn not supported in this browser');
+    }
+
+    const credentialInfo = userCredentials[email];
+    if (!credentialInfo) {
+        throw new Error('No biometric credential found. Please register first.');
+    }
+
+    try {
+        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const credential = credentialInfo; // FIXED: Removed JSON.parse
+
+        const publicKeyCredentialRequestOptions = {
+            challenge: challenge,
+            allowCredentials: [{
+                id: base64UrlToArrayBuffer(credential.id),
+                type: 'public-key'
+            }],
+            userVerification: 'required',
+            timeout: 60000
+        };
+
+        const assertion = await navigator.credentials.get({
+            publicKey: publicKeyCredentialRequestOptions
+        });
+
+        if (!assertion) {
+            throw new Error('Biometric authentication failed');
+        }
+
+        console.log('✅ Biometric authentication successful');
+
+    } catch (error) {
+        if (error.name === 'NotAllowedError') {
+            throw new Error('Biometric authentication was cancelled or failed');
+        } else {
+            throw error;
+        }
+    }
+}
+
+
+        /**
+         * Show dashboard with user information
+         */
+        function showDashboard(user) {
+            document.getElementById('userName').textContent = `Name: ${user.name}`;
+            document.getElementById('userEmail').textContent = `Email: ${user.email}`;
+            document.getElementById('userWallet').textContent = `Wallet: ${user.userAddress.substring(0, 20)}...`;
+            
+            showSection('dashboard');
+        }
+
+        /**
+         * Update navigation based on auth state
+         */
+        function updateNavigation(isAuthenticated) {
+            const dashboardTab = document.getElementById('dashboardTab');
+            if (isAuthenticated) {
+                dashboardTab.style.display = 'block';
+                setActiveTab('dashboard');
+            } else {
+                dashboardTab.style.display = 'none';
+            }
+        }
+
+        /**
+         * Show identity proof
+         */
+        function showIdentityProof() {
+            if (!currentUser) return;
+            
+            const proof = {
+                name: currentUser.name,
+                email: currentUser.email,
+                walletAddress: currentUser.userAddress,
+                blockchainTx: currentUser.transactionHash,
+                registeredAt: currentUser.registeredAt,
+                verifiedBy: 'Biometric Authentication'
+            };
+            
+            showStatus('info', `Identity Proof: ${JSON.stringify(proof, null, 2)}`);
+        }
+
+        /**
+         * Logout user
+         */
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('currentUser');
+            
+            updateNavigation(false);
+            showSection('login');
+            showStatus('info', 'You have been logged out successfully.');
+        }
+
+        /**
+         * Show specific section
+         */
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show target section
+            const targetSection = document.getElementById(sectionName);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            setActiveTab(sectionName);
+        }
+
+        /**
+         * Set active navigation tab
+         */
+        function setActiveTab(tabName) {
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            const activeTab = Array.from(tabs).find(tab => 
+                tab.textContent.toLowerCase().includes(tabName.toLowerCase())
+            );
+            
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+        }
+
+        /**
+         * Show status message
+         */
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds for success/info messages
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        /**
+         * Show loading spinner
+         */
+        function showLoading(message) {
+            const loadingDiv = document.getElementById('loading');
+            const loadingText = document.getElementById('loadingText');
+            loadingText.textContent = message;
+            loadingDiv.style.display = 'block';
+        }
+
+        /**
+         * Hide loading spinner
+         */
+        function hideLoading() {
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'none';
+        }
+
+        /**
+         * Validate email format
+         */
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        /**
+         * Convert base64url to ArrayBuffer
+         */
+        function base64UrlToArrayBuffer(base64url) {
+            const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        /**
+         * Convert ArrayBuffer to base64url
+         */
+        function arrayBufferToBase64Url(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            const base64 = btoa(binary);
+            return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        }
+    </script>
+</body>
+</html>
