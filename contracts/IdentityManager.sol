@@ -94,34 +94,6 @@ contract IdentityManager {
         registeredUsers.push(msg.sender);
         
         emit IdentityRegistered(msg.sender, _name, _email, block.timestamp);
-    }
-    
-    /**
-     * @dev Update existing identity information
-     * @param _name New name
-     * @param _email New email (must be unique)
-     */
-    function updateIdentity(
-        string memory _name,
-        string memory _email
-    ) public onlyRegisteredUser {
-        require(bytes(_name).length > 0, "Name cannot be empty");
-        require(bytes(_email).length > 0, "Email cannot be empty");
-        
-        Identity storage identity = identities[msg.sender];
-        
-        // If email is changing, check if new email is available
-        if (keccak256(bytes(identity.email)) != keccak256(bytes(_email))) {
-            require(!emailExists[_email], "Email already registered");
-            emailExists[identity.email] = false; // Release old email
-            emailExists[_email] = true; // Reserve new email
-        }
-        
-        identity.name = _name;
-        identity.email = _email;
-        
-        emit IdentityUpdated(msg.sender, _name, _email, block.timestamp);
-    }
     
     /**
      * @dev Get user information by address
@@ -159,30 +131,7 @@ contract IdentityManager {
         );
     }
     
-    /**
-     * @dev Get current user's information (msg.sender)
-     * @return name User's name
-     * @return email User's email
-     * @return hashedAadhaar User's hashed Aadhaar number
-     * @return ethAddress User's Ethereum address
-     * @return registrationTime Registration timestamp
-     * @return isActive Whether the identity is active
-     */
-    function getMyIdentity() 
-        public 
-        view 
-        onlyRegisteredUser
-        returns (
-            string memory name,
-            string memory email,
-            string memory hashedAadhaar,
-            address ethAddress,
-            uint256 registrationTime,
-            bool isActive
-        ) 
-    {
-        return getIdentity(msg.sender);
-    }
+   
     
     /**
      * @dev Check if an address has a registered identity
@@ -211,20 +160,7 @@ contract IdentityManager {
         return emailExists[_email];
     }
     
-    /**
-     * @dev Deactivate identity (soft delete)
-     * Only the identity owner can deactivate their own identity
-     */
-    function deactivateIdentity() public onlyRegisteredUser {
-        Identity storage identity = identities[msg.sender];
-        identity.isActive = false;
-        
-        // Release email and Aadhaar for reuse
-        emailExists[identity.email] = false;
-        aadhaarExists[identity.hashedAadhaar] = false;
-        
-        emit IdentityDeactivated(msg.sender, block.timestamp);
-    }
+    
     
     /**
      * @dev Get total number of registered users
